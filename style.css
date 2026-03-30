@@ -156,7 +156,37 @@ canvas {
 
 /* スマホ向けのタッチデバイス検出時のみ表示 */
 @media (pointer: coarse) {
-    #virtual-pad {
+    body {
+        align-items: flex-start;
+    }
+
+    #game-container {
+        aspect-ratio: auto;
         display: flex;
+        flex-direction: column;
+        height: auto;
+        max-height: 100vh;
+    }
+
+    canvas {
+        width: 100%;
+        height: auto;
+        aspect-ratio: 800 / 480;
+        flex-shrink: 0;
+    }
+
+    #virtual-pad {
+        position: relative;
+        bottom: auto;
+        display: flex;
+        padding: 15px 20px;
+        background-color: rgba(0, 0, 0, 0.85);
+        flex-shrink: 0;
+    }
+
+    #ui-layer {
+        /* ui-layer は canvas と同じサイズに制限 */
+        height: auto;
+        aspect-ratio: 800 / 480;
     }
 }

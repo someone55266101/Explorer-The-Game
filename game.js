@@ -56,7 +56,7 @@ function initPlatforms() {
 
         // 3. 高さが異なる空中の足場エリア (x: 2400 ~ 3000)
         { x: 2450, y: 300, w: 80, h: 20, type: 'ground' },
-        { x: 2600, y: 180, w: 80, h: 20, type: 'ground' },
+        { x: 2600, y: 170, w: 80, h: 20, type: 'ground' },
         { x: 2850, y: 250, w: 80, h: 20, type: 'ground' },
         { x: 3000, y: 400, w: 800, h: 80, type: 'ground' },
 
@@ -68,24 +68,26 @@ function initPlatforms() {
         // 5. 崖と宙に浮いた「崩れる床」エリア (x: 4300 ~ 4800)
         { x: 4350, y: 250, w: 40, h: 20, type: 'ground' },
         { x: 4500, y: 200, w: 80, h: 20, type: 'crumble', active: false, timer: 0 },
-        { x: 4700, y: 180, w: 80, h: 20, type: 'crumble', active: false, timer: 0 },
-        { x: 4900, y: 250, w: 40, h: 20, type: 'ground' },
+        { x: 4700, y: 170, w: 80, h: 20, type: 'crumble', active: false, timer: 0 },
+        { x: 4900, y: 280, w: 40, h: 20, type: 'ground' },
         { x: 5000, y: 400, w: 250, h: 80, type: 'ground' },
 
         // 6. ゴール（宝箱）と手前の連続崩れる床 (x: 4900 ~ 5300)
+        { x: 5250, y: 460, w: 360, h: 20, type: 'spike' },
         { x: 5250, y: 400, w: 80, h: 20, type: 'crumble', active: false, timer: 0 },
         { x: 5330, y: 400, w: 80, h: 20, type: 'crumble', active: false, timer: 0 },
         { x: 5410, y: 400, w: 100, h: 20, type: 'crumble', active: false, timer: 0 },
+        { x: 5510, y: 400, w: 100, h: 20, type: 'crumble', active: false, timer: 0 },
 
-        { x: 5510, y: 400, w: 200, h: 80, type: 'ground' },
-        { x: 5660, y: 340, w: 64, h: 60, type: 'goal' }
+        { x: 5610, y: 400, w: 200, h: 80, type: 'ground' },
+        { x: 5760, y: 360, w: 64, h: 60, type: 'goal' }
     ];
 }
 
 // BGMの初期化
 const bgm = new Audio('music/bgm.mp3');
 bgm.loop = true;
-bgm.volume = 0.5;
+bgm.volume = 0.2;
 
 let gameState = 'title'; // 'title', 'playing'
 let startTime = 0;
@@ -371,7 +373,7 @@ class Player {
                     this.vy = 0;
                     if (p.type === 'crumble' && !p.active) {
                         p.active = true;
-                        p.timer = 20; // ガタガタ時間を短く
+                        p.timer = 15; // ガタガタ時間を短く
                     }
                 }
                 else if (this.vy < 0) {
@@ -655,7 +657,21 @@ function updateTimer() {
     }
 }
 
-function gameLoop() {
+let lastFrameTime = 0;
+const FRAME_DURATION = 1000 / 60; // 60fps基準: 約16.67ms
+const MAX_STEPS_PER_FRAME = 4;    // 最大ステップ数（暴走防止）
+let timeAccumulator = 0;
+
+function gameLoop(timestamp) {
+    if (lastFrameTime === 0) lastFrameTime = timestamp;
+    let deltaTime = timestamp - lastFrameTime;
+    lastFrameTime = timestamp;
+
+    // 異常値（タブバックグラウンド復帰時等）をクランプ
+    if (deltaTime > FRAME_DURATION * MAX_STEPS_PER_FRAME) {
+        deltaTime = FRAME_DURATION * MAX_STEPS_PER_FRAME;
+    }
+
     if (gameState === 'title') {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         drawBackground(cameraX);
@@ -665,10 +681,17 @@ function gameLoop() {
         return;
     }
 
-    updateTimer();
-    updateGameObjects();
-    if (!player.dead) {
-        player.update();
+    // 累積時間に加算し、FRAME_DURATION ごとにロジックを実行
+    timeAccumulator += deltaTime;
+    let steps = 0;
+    while (timeAccumulator >= FRAME_DURATION && steps < MAX_STEPS_PER_FRAME) {
+        updateTimer();
+        updateGameObjects();
+        if (!player.dead) {
+            player.update();
+        }
+        timeAccumulator -= FRAME_DURATION;
+        steps++;
     }
 
     // カメラの追従
