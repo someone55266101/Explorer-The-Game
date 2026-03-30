@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>探検家TheGame</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div id="game-container">
+        <canvas id="gameCanvas" width="800" height="480"></canvas>
+        <div id="ui-layer">
+            <h1 id="game-over-text" class="hidden">GAME CLEAR!</h1>
+            <p id="instruction">十字キー(左右)で移動、SPACEキーでジャンプ</p>
+            <div id="timer-display">TIME: 0.00s</div>
+            <div id="virtual-pad">
+                <div class="pad-group-left">
+                    <div id="pad-left" class="v-btn">◀</div>
+                    <div id="pad-right" class="v-btn">▶</div>
+                </div>
+                <div id="pad-jump" class="v-btn">JUMP</div>
+            </div>
+        </div>
+        <div id="title-screen">
+            <img src="image/title.png" alt="Title" id="title-image">
+            <p class="blink-text">Click or press any key to start</p>
+        </div>
+    </div>
+    <script src="game.js"></script>
+</body>
+
+</html>
